@@ -79,13 +79,29 @@ set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_nam
 # Contents/PlugIns/tls. Windows: Schannel in bin/64bit/qt-plugins/tls. Linux uses the
 # distribution's Qt, which ships the OpenSSL backend.
 if(APPLE AND TARGET Qt6::QSecureTransportBackendPlugin)
+  # Xcode signs the bundle after this step and refuses unsigned nested code, so sign the
+  # copied plugin first, with the bundle's identity (hardened and timestamped when real).
+  set(_tls_plugin "$<TARGET_BUNDLE_CONTENT_DIR:${CMAKE_PROJECT_NAME}>/PlugIns/tls")
+  if(CODESIGN_IDENTITY AND NOT CODESIGN_IDENTITY STREQUAL "-")
+    set(
+      _tls_sign_args
+      --sign
+      "${CODESIGN_IDENTITY}"
+      --options
+      runtime
+      --timestamp
+    )
+  else()
+    set(_tls_sign_args --sign -)
+  endif()
   add_custom_command(
     TARGET ${CMAKE_PROJECT_NAME}
     POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_BUNDLE_CONTENT_DIR:${CMAKE_PROJECT_NAME}>/PlugIns/tls"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${_tls_plugin}"
+    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:Qt6::QSecureTransportBackendPlugin>" "${_tls_plugin}/"
     COMMAND
-      "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:Qt6::QSecureTransportBackendPlugin>"
-      "$<TARGET_BUNDLE_CONTENT_DIR:${CMAKE_PROJECT_NAME}>/PlugIns/tls/"
+      /usr/bin/codesign --force ${_tls_sign_args}
+      "${_tls_plugin}/$<TARGET_FILE_NAME:Qt6::QSecureTransportBackendPlugin>"
     VERBATIM
   )
 endif()
