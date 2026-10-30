@@ -127,14 +127,14 @@ bool SettingsStore::load(QString *error)
 	for (auto it = profiles.constBegin(); it != profiles.constEnd(); ++it)
 		m_profiles.insert(it.key(), profileFromJson(it.value().toObject()));
 
-	for (const QJsonValue &value : root.value(QLatin1String("sites")).toArray()) {
+	for (const QJsonValue value : root.value(QLatin1String("sites")).toArray()) {
 		const SiteEntry site = siteFromJson(value.toObject());
 		if (site.blogId > 0 && site.siteUrl.isValid())
 			upsertSite(site);
 	}
 
 	const QJsonArray recent = root.value(QLatin1String("recent_blog_ids")).toArray();
-	for (const QJsonValue &value : recent) {
+	for (const QJsonValue value : recent) {
 		const qint64 blogId = value.toInteger();
 		if (blogId > 0 && !m_recentBlogIds.contains(blogId) && m_recentBlogIds.size() < kMaxRecentBlogs)
 			m_recentBlogIds.append(blogId);
