@@ -184,6 +184,8 @@ ${_usage_host:-}"
   rm -rf ${staging}
   mkdir -p ${staging}/${product_name}/bin/64bit ${staging}/${product_name}/data
   cp ${plugin_libs[1]} ${staging}/${product_name}/bin/64bit/
+  # Debug info ships separately in the dbgsym package, as with the .deb.
+  strip --strip-unneeded ${staging}/${product_name}/bin/64bit/${product_name}.so
   local data_dir=${project_root}/release/${config}/share/obs/obs-plugins/${product_name}
   if [[ -d ${data_dir} ]] cp -R ${data_dir}/. ${staging}/${product_name}/data/
   cp ${project_root}/.github/scripts/portable/INSTALL-linux.txt ${staging}/${product_name}/INSTALL.txt
