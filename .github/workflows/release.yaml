@@ -80,7 +80,7 @@ jobs:
           # <name>-<version>-<variant>-<commit>/ directories from build-project.yaml
           variants=(
             'windows-x64;zip|exe'
-            'macos-universal;tar.xz|pkg'
+            'macos-universal;tar.xz|pkg|zip'
             'ubuntu-24.04-x86_64;tar.xz|deb|ddeb'
             'sources;tar.xz'
           )

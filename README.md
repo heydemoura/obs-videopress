@@ -46,10 +46,18 @@ Formatting is enforced in CI with clang-format 19 and gersemi:
 
 ## Releasing
 
-Publishing a GitHub release builds the plugin for **Windows** (x64 `.zip`), **macOS**
-(universal `.pkg`) and **Linux** (Ubuntu 24.04 x86_64 `.deb`, plus a source tarball) and
-attaches the packages and their SHA-256 checksums to the release
-([`.github/workflows/release.yaml`](.github/workflows/release.yaml)).
+Publishing a GitHub release builds the plugin for **Windows** (x64), **macOS** (universal)
+and **Linux** (Ubuntu 24.04 x86_64) and attaches the packages and their SHA-256 checksums to
+the release ([`.github/workflows/release.yaml`](.github/workflows/release.yaml)):
+
+| | System package | Manual install (portable) | Copy into |
+|---|---|---|---|
+| Windows | — | `…-windows-x64-portable.zip` | `C:\ProgramData\obs-studio\plugins\` |
+| macOS | `…-macos-universal.pkg` | `…-macos-universal-portable.zip` | `~/Library/Application Support/obs-studio/plugins/` |
+| Linux | `…-x86_64-linux-gnu.deb` | `…-x86_64-linux-gnu-portable.tar.xz` | `~/.config/obs-studio/plugins/` |
+
+Each portable archive is self-contained and carries an `INSTALL.txt` with the steps. A source
+tarball is attached as well.
 
 1. Bump `version` in [`buildspec.json`](buildspec.json) and commit it on `main`.
 2. Publish a release whose tag is that version, e.g. `gh release create 0.2.0 --generate-notes`

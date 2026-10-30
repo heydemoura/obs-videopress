@@ -1,0 +1,22 @@
+VideoPress for OBS: manual installation (macOS)
+===============================================
+
+This archive is an alternative to the .pkg installer. It needs OBS Studio 31.1 or later
+(Apple Silicon or Intel).
+
+1. Quit OBS Studio.
+2. Copy "obs-videopress.plugin" from this archive into:
+
+       ~/Library/Application Support/obs-studio/plugins/
+
+   (In Finder: Go -> Go to Folder..., paste the path; create the "plugins" folder if it
+   does not exist.)
+
+3. If this build is not signed and notarized, macOS may refuse to load it. Clear the
+   download quarantine once in Terminal:
+
+       xattr -dr com.apple.quarantine ~/Library/Application\ Support/obs-studio/plugins/obs-videopress.plugin
+
+4. Start OBS Studio. The VideoPress dock is under Docks -> VideoPress.
+
+To uninstall, quit OBS and delete obs-videopress.plugin from that folder.

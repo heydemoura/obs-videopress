@@ -1,0 +1,20 @@
+VideoPress for OBS: manual installation (Windows)
+=================================================
+
+This archive is an alternative to an installer. It needs OBS Studio 31.1 or later, 64-bit.
+
+1. Quit OBS Studio.
+2. Copy the "obs-videopress" folder from this archive into:
+
+       C:\ProgramData\obs-studio\plugins\
+
+   (Create the "plugins" folder if it does not exist. Windows asks for administrator
+   permission because the folder is shared by all users.)
+
+   You should end up with:
+       C:\ProgramData\obs-studio\plugins\obs-videopress\bin\64bit\obs-videopress.dll
+       C:\ProgramData\obs-studio\plugins\obs-videopress\data\...
+
+3. Start OBS Studio. The VideoPress dock is under Docks -> VideoPress.
+
+To uninstall, quit OBS and delete C:\ProgramData\obs-studio\plugins\obs-videopress.

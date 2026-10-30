@@ -1,0 +1,24 @@
+VideoPress for OBS: manual installation (Linux)
+===============================================
+
+This archive is an alternative to the .deb package, for installing into your own OBS
+configuration without root. It needs OBS Studio 31.1 or later installed from your
+distribution or the OBS PPA, built against the same Qt 6 and libobs as Ubuntu 24.04.
+(The Flatpak build of OBS uses its own runtime and is not supported by this archive.)
+
+1. Quit OBS Studio.
+2. Extract the archive (it contains a single "obs-videopress" folder) into:
+
+       ~/.config/obs-studio/plugins/
+
+   For example:
+       mkdir -p ~/.config/obs-studio/plugins
+       tar -xJf obs-videopress-*-portable.tar.xz -C ~/.config/obs-studio/plugins
+
+   You should end up with:
+       ~/.config/obs-studio/plugins/obs-videopress/bin/64bit/obs-videopress.so
+       ~/.config/obs-studio/plugins/obs-videopress/data/...
+
+3. Start OBS Studio. The VideoPress dock is under Docks -> VideoPress.
+
+To uninstall, quit OBS and delete ~/.config/obs-studio/plugins/obs-videopress.

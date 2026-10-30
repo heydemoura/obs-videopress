@@ -160,6 +160,17 @@ package() {
     popd
   }
 
+  # Self-contained alternative to the .pkg: the .plugin bundle plus instructions, to copy
+  # into ~/Library/Application Support/obs-studio/plugins by hand.
+  log_group "Creating portable archive for ${product_name}..."
+  local portable_dir=${project_root}/release/${output_name}-portable
+  rm -rf ${portable_dir} ${project_root}/release/${output_name}-portable.zip
+  mkdir -p ${portable_dir}
+  ditto ${project_root}/release/${config}/${product_name}.plugin ${portable_dir}/${product_name}.plugin
+  cp ${project_root}/.github/scripts/portable/INSTALL-macos.txt ${portable_dir}/INSTALL.txt
+  ditto -c -k --norsrc --noextattr --noqtn --keepParent ${portable_dir} ${project_root}/release/${output_name}-portable.zip
+  rm -rf ${portable_dir}
+
   if [[ ${config} == Release ]] {
     log_group "Archiving ${product_name} Debug Symbols..."
     pushd ${project_root}/release/${config}

@@ -59,13 +59,22 @@ function Package {
     Remove-Item @RemoveArgs
 
     Log-Group "Archiving ${ProductName}..."
+    # Self-contained package: the obs-videopress folder (bin/64bit + data) plus instructions,
+    # to copy into C:\ProgramData\obs-studio\plugins by hand.
+    $PortableRoot = "${ProjectRoot}/release/${OutputName}-portable"
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue -Path $PortableRoot
+    New-Item -ItemType Directory -Path $PortableRoot | Out-Null
+    Copy-Item -Recurse -Path (Get-ChildItem -Path "${ProjectRoot}/release/${Configuration}").FullName -Destination $PortableRoot
+    Copy-Item -Path "${ProjectRoot}/.github/scripts/portable/INSTALL-windows.txt" -Destination "${PortableRoot}/INSTALL.txt"
+
     $CompressArgs = @{
-        Path = (Get-ChildItem -Path "${ProjectRoot}/release/${Configuration}" -Exclude "${OutputName}*.*")
+        Path = (Get-ChildItem -Path $PortableRoot).FullName
         CompressionLevel = 'Optimal'
-        DestinationPath = "${ProjectRoot}/release/${OutputName}.zip"
+        DestinationPath = "${ProjectRoot}/release/${OutputName}-portable.zip"
         Verbose = ($Env:CI -ne $null)
     }
     Compress-Archive -Force @CompressArgs
+    Remove-Item -Recurse -Force -Path $PortableRoot
     Log-Group
 }
 
