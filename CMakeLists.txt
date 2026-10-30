@@ -18,6 +18,10 @@ add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 find_package(libobs REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
+# plugin-support logs through blogva, declared in libobs's util/base.h.
+if(TARGET plugin-support)
+  target_link_libraries(plugin-support PRIVATE OBS::libobs)
+endif()
 
 if(NOT ENABLE_FRONTEND_API OR NOT ENABLE_QT)
   message(FATAL_ERROR "obs-videopress requires ENABLE_FRONTEND_API and ENABLE_QT")
