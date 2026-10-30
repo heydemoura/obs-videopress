@@ -1,0 +1,128 @@
+# SPDX-FileCopyrightText: 2026 Automattic Inc. and obs-videopress contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Builds the plugin for Windows, macOS and Linux (Ubuntu) whenever a GitHub release is
+# published, and attaches the packages and their SHA-256 checksums to that release.
+#
+# Cut a release: bump "version" in buildspec.json, commit, then publish a release whose tag
+# is that version (e.g. `gh release create 0.2.0 --generate-notes`, or the Releases page).
+name: Release
+run-name: Release ${{ github.event.release.tag_name }} 📦
+on:
+  release:
+    types:
+      - published
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    name: Check Release Version ☑️
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Match Tag to buildspec.json ☑️
+        id: check
+        shell: bash
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          : Match Tag to buildspec.json ☑️
+          shopt -s extglob
+          version="${TAG#v}"
+          case "${version}" in
+            +([0-9]).+([0-9]).+([0-9]) | +([0-9]).+([0-9]).+([0-9])-@(beta|rc)*([0-9]) ) ;;
+            *)
+              echo "::error::Release tag '${TAG}' is not a version like 1.2.3 or 1.2.3-beta1."
+              exit 1
+              ;;
+          esac
+          spec_version="$(jq -r '.version' buildspec.json)"
+          if [[ "${spec_version}" != "${version}" ]]; then
+            echo "::error::Release tag '${TAG}' does not match buildspec.json version '${spec_version}'. The packages and the plugin report the buildspec version: bump it, commit, and tag that commit."
+            exit 1
+          fi
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+  build-project:
+    name: Build Project 🧱
+    needs: validate
+    uses: ./.github/workflows/build-project.yaml
+    secrets: inherit
+    permissions:
+      contents: read
+
+  publish:
+    name: Attach Packages to Release 🛫
+    needs: [validate, build-project]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download Build Artifacts 📥
+        uses: actions/download-artifact@v4
+
+      - name: Collect Packages 🏷️
+        run: |
+          : Collect Packages 🏷️
+          shopt -s extglob
+          shopt -s nullglob
+
+          mkdir -p packages
+          commit_hash="${GITHUB_SHA:0:9}"
+          # <name>-<version>-<variant>-<commit>/ directories from build-project.yaml
+          variants=(
+            'windows-x64;zip|exe'
+            'macos-universal;tar.xz|pkg'
+            'ubuntu-24.04-x86_64;tar.xz|deb|ddeb'
+            'sources;tar.xz'
+          )
+          for variant_data in "${variants[@]}"; do
+            IFS=';' read -r variant suffix <<< "${variant_data}"
+            for candidate in *-"${variant}"-"${commit_hash}"/@(*|*-dbgsym).@(${suffix}); do
+              mv "${candidate}" packages/
+            done
+          done
+
+          count=$(find packages -type f | wc -l)
+          if (( count == 0 )); then
+            echo "::error::No packages were produced."
+            exit 1
+          fi
+          ls -la packages
+
+      - name: Generate Checksums 🪪
+        run: |
+          : Generate Checksums 🪪
+          {
+            echo ''
+            echo '### Checksums (SHA-256)'
+            echo ''
+            echo '```'
+            (cd packages && sha256sum -- *)
+            echo '```'
+          } > CHECKSUMS.md
+          cat CHECKSUMS.md
+
+      - name: Upload to Release 📤
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          : Upload to Release 📤
+          gh release upload "${TAG}" packages/* --clobber
+
+          # Append the checksums to the notes once, keeping whatever the release author wrote.
+          notes="$(gh release view "${TAG}" --json body --jq .body)"
+          if [[ "${notes}" != *'### Checksums (SHA-256)'* ]]; then
+            printf '%s\n%s\n' "${notes}" "$(cat CHECKSUMS.md)" > notes.md
+            gh release edit "${TAG}" --notes-file notes.md
+          fi

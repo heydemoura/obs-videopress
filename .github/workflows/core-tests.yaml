@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 Automattic Inc. and obs-videopress contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: Core Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'core/**'
+      - '.github/workflows/core-tests.yaml'
+permissions:
+  contents: read
+jobs:
+  core-tests:
+    name: videopress-core unit tests 🧪
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Qt 6 📦
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build qt6-base-dev
+      - name: Build 🧱
+        run: |
+          cmake -S core -B build-core -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build-core
+      - name: Test 🧪
+        run: ctest --test-dir build-core --output-on-failure
