@@ -38,7 +38,7 @@
     },
     "name": "obs-videopress",
     "displayName": "VideoPress for OBS",
-    "version": "0.1.0",
+    "version": "0.0.1",
     "author": "Automattic Inc.",
     "website": "https://videopress.com",
     "email": "support@videopress.com"
